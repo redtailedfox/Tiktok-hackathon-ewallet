@@ -38,5 +38,18 @@ async function sendTransaction() {
   }
 }
 
-// Call the function to send a transaction
+// Call the function to send a transaction general function
 sendTransaction();
+
+
+// Call a function on the smart contract written
+const result = await contract.methods.someFunction().call();
+console.log('Result:', result);
+
+// Send a transaction to the smart contract
+const accounts = await web3.eth.getAccounts();
+const tx = await contract.methods.someFunction().send({
+  from: accounts[0],
+  value: web3.utils.toWei('1', 'ether'), // Value in Wei
+});
+console.log('Transaction hash:', tx.transactionHash);
