@@ -17,18 +17,18 @@ contract FiatWallet {
         owner = msg.sender;
     }
 
-    function deposit() public payable {
-        require(msg.value > 0, "Amount must be greater than zero");
-        balances[msg.sender] += msg.value;
+    function deposit(uint256 amount) public {
+        require(amount > 0, "Amount must be greater than zero");
+        balances[msg.sender] += amount;
 
-        emit Deposit(msg.sender, msg.value);
+        emit Deposit(msg.sender, amount);
     }
 
     function withdraw(uint256 amount) public {
         require(balances[msg.sender] >= amount, "Insufficient balance");
 
         balances[msg.sender] -= amount;
-        payable(msg.sender).transfer(amount);
+        // Removing the ether transfer part as we are not dealing with real ether
 
         emit Withdrawal(msg.sender, amount);
     }

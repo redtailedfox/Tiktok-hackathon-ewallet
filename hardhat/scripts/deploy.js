@@ -1,4 +1,4 @@
-// Scripts for deploying FiatWallet.sol onto the blockchain
+// Scripts for deploying StableCoinWallet.sol onto the blockchain
 // To specify network, use --network flag when running the script
 // IMPORTANT: After each re-deployment, note down the contract address
 const hre = require("hardhat");
@@ -10,7 +10,7 @@ async function main() {
 
   console.log("Deploying contracts with the account:", deployer.address);
 
-  // Deploy FiatWallet.sol
+  // Deploy StableCoinWallet.sol
   const contract = await hre.ethers.deployContract("FiatWallet");
   const contractAddress = await contract.getAddress();
   console.log("FiatWallet contract address:", contractAddress);
