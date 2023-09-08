@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   const handleUsernameChange = (e) => {
     setUsername(e.target.value);
@@ -20,12 +22,15 @@ const LoginPage = () => {
 
     // You can add your login logic here (e.g., sending a request to the server for authentication).
     // For now, we'll just display an alert with the entered username and a message.
-    alert(`Logged in as: ${username}`);
+
+	alert(`Welcome back ${username}!`);
+	navigate("/dashboard");
+
   };
 
   return (
     <div style={styles.container}>
-      <h2>Login</h2>
+      <h2>Log in</h2>
       <div style={styles.inputContainer}>
         <input
           type="text"
