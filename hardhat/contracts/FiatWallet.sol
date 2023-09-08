@@ -8,7 +8,7 @@ contract FiatWallet {
     event Deposit(address indexed user, uint256 amount);
     event Withdrawal(address indexed user, uint256 amount);
 
-    modifier onlyOwner {
+    modifier onlyOwner() {
         require(msg.sender == owner, "Not the contract owner");
         _;
     }
@@ -42,4 +42,3 @@ contract FiatWallet {
         payable(owner).transfer(amount);
     }
 }
-

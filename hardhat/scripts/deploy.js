@@ -1,33 +1,24 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// You can also run a script with `npx hardhat run <script>`. If you do that, Hardhat
-// will compile your contracts, add the Hardhat Runtime Environment's members to the
-// global scope, and execute the script.
+// Scripts for deploying FiatWallet.sol onto the blockchain
+// To specify network, use --network flag when running the script
+// IMPORTANT: After each re-deployment, note down the contract address
 const hre = require("hardhat");
-
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+  const [deployer] = await hre.ethers.getSigners();
+  // for hardhat network, deployer is always Account #0 (0xf39...)
+  // for Sepolia testnet, deployer is defined by RPC URL and private key in "networks" section of hardhat.config.js
+  // for metamask, deployer is the connected wallet address
 
-  const lockedAmount = hre.ethers.parseEther("0.001");
+  console.log("Deploying contracts with the account:", deployer.address);
 
-  const lock = await hre.ethers.deployContract("Lock", [unlockTime], {
-    value: lockedAmount,
-  });
-
-  await lock.waitForDeployment();
-
-  console.log(
-    `Lock with ${ethers.formatEther(
-      lockedAmount
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
-  );
+  // Deploy FiatWallet.sol
+  const contract = await hre.ethers.deployContract("FiatWallet");
+  const contractAddress = await contract.getAddress();
+  console.log("FiatWallet contract address:", contractAddress);
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
