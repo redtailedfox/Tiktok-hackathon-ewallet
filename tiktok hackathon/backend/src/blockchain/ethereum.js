@@ -1,55 +1,83 @@
-const Web3 = require('web3');
-const contractABI = require('./contractABI.json'); // Replace with your contract's ABI
-const contractAddress = '0xYourContractAddress'; // Replace with your contract's address
+const { ethers } = require('ethers');
+
+// Define the contract ABI as a human-readable string
+const contractABI = [
+  'function deposit() public payable',
+  'function withdraw(uint256 amount) public',
+  // Add other function declarations as needed
+].join(';');
+
+const contractAddress = '0x0D54602E93aD2B38d7929d9099f22162131107c2'; // Replace with your contract's address
 const privateKey = 'YourPrivateKey'; // Replace with your wallet's private key
 const infuraUrl = 'https://mainnet.infura.io/v3/YourInfuraProjectId'; // Replace with your Infura project URL
 
-const web3 = new Web3(new Web3.providers.HttpProvider(infuraUrl));
-
-const wallet = web3.eth.accounts.privateKeyToAccount(privateKey);
-web3.eth.accounts.wallet.add(wallet);
-
-const contract = new web3.eth.Contract(contractABI, contractAddress);
-
 async function sendTransaction() {
   try {
-    const gasPrice = await web3.eth.getGasPrice();
+    // Connect to the Ethereum network using Infura
+    const provider = new ethers.JsonRpcProvider(infuraUrl);
+
+    // Create a wallet from the private key
+    const wallet = new ethers.Wallet(privateKey, provider);
+
+    // Create a contract instance
+    const contract = new ethers.Contract(contractAddress, contractABI, wallet);
+
+    // Get the gas price and estimate gas limit
+    const gasPrice = await provider.getGasPrice();
     const gasLimit = 200000; // Adjust based on your contract's requirements
-    const valueToSend = web3.utils.toWei('1', 'ether'); // Amount to send in Wei
 
-    const nonce = await web3.eth.getTransactionCount(wallet.address, 'latest');
+    // Specify the value to send in Wei
+    const valueToSend = ethers.utils.parseEther('1'); // 1 Ether in Wei
 
+    // Get the nonce for the sender's address
+    const nonce = await wallet.getTransactionCount();
+
+    // Create a transaction object
     const tx = {
-      from: wallet.address,
       to: contractAddress,
-      gasPrice: gasPrice,
-      gas: gasLimit,
+      gasPrice: gasPrice.toHexString(),
+      gasLimit: gasLimit,
       nonce: nonce,
-      value: valueToSend,
-      data: contract.methods.someMethod().encodeABI(), // Replace with your contract method
+      value: valueToSend.toHexString(),
+      data: contract.interface.encodeFunctionData('someMethod'), // Replace with your contract method
     };
 
-    const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
-    const txReceipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+    // Sign and send the transaction
+    const signedTx = await wallet.signTransaction(tx);
+    const txResponse = await provider.sendTransaction(signedTx);
 
-    console.log('Transaction Hash:', txReceipt.transactionHash);
+    console.log('Transaction Hash:', txResponse.hash);
   } catch (error) {
     console.error('Error:', error);
   }
 }
 
-// Call the function to send a transaction general function
+// Call the function to send a transaction
 sendTransaction();
 
+// Create a contract instance for interaction
+const provider = new ethers.JsonRpcProvider(infuraUrl);
+const contract = new ethers.Contract(contractAddress, contractABI, provider);
 
-// Call a function on the smart contract written
-const result = await contract.methods.someFunction().call();
-console.log('Result:', result);
+async function interactWithContract() {
+  try {
+    // Call a function on the smart contract
+    const result = await contract.someFunction();
+    console.log('Result:', result);
 
-// Send a transaction to the smart contract
-const accounts = await web3.eth.getAccounts();
-const tx = await contract.methods.someFunction().send({
-  from: accounts[0],
-  value: web3.utils.toWei('1', 'ether'), // Value in Wei
-});
-console.log('Transaction hash:', tx.transactionHash);
+    // Send a transaction to the smart contract
+    const walletWithProvider = new ethers.Wallet(privateKey, provider);
+    const tx = await walletWithProvider.sendTransaction({
+      to: contractAddress,
+      value: ethers.utils.parseEther('1'), // 1 Ether in Wei
+      data: contract.interface.encodeFunctionData('someFunction'), // Replace with your contract method
+    });
+
+    console.log('Transaction Hash:', tx.hash);
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+// Call the function to interact with the contract
+interactWithContract();
