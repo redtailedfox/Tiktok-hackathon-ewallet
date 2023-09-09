@@ -11,9 +11,9 @@ async function main() {
   console.log("Deploying contracts with the account:", deployer.address);
 
   // Deploy StableCoinWallet.sol
-  const contract = await hre.ethers.deployContract("FiatWallet");
+  const contract = await hre.ethers.deployContract("TikToken");
   const contractAddress = await contract.getAddress();
-  console.log("FiatWallet contract address:", contractAddress);
+  console.log("TikToken contract address:", contractAddress);
 }
 
 main()
