@@ -2,13 +2,15 @@ import React, {useEffect, useState} from 'react';
 import { ethers } from 'ethers';
 
 const DashboardPage = () => {
-    const [balance, setBalance] = useState(0);
-    // Define the contract ABI as a human-readable string
-const contractABI = [
-    'function deposit(uint256 amount) public',
-    'function withdraw(uint256 amount) public',
-    'function getBalance(address userAddress) public view returns (uint256)'
-    // Add other function declarations as needed
+  const [balance, setBalance] = useState(0);
+  // Define the contract ABI as a human-readable string
+  const contractABI = [
+  	'function CreateNewWallet(uint uid) external returns (address)',
+  	'function DestroyWallet(uint uid) external',
+  	'function TransferMoneyBetweenWallets(uint src_uid, uint dst_uid, uint value) external',
+  	'function getBalanceOf(uint uid) external view returns (uint)',
+  	'function DepositTo(uint uid, uint value) external',
+  	'function Withdraw(uint uid, uint value)'
   ]
   
   const contractAddress = '0x8Eb413920478042C026610362b5D286B220Ee896'; // Replace with your contract's address
