@@ -1,12 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract FiatWallet {
-    mapping(address => uint256) private balances;
-    address public owner;
+contract TikToken {
 
-    event Deposit(address indexed user, uint256 amount);
-    event Withdrawal(address indexed user, uint256 amount);
+	mapping(uint => address) private _userWallets;
+	address public owner;
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Not the contract owner");
@@ -17,28 +15,55 @@ contract FiatWallet {
         owner = msg.sender;
     }
 
-    function deposit(uint256 amount) public {
-        require(amount > 0, "Amount must be greater than zero");
-        balances[msg.sender] += amount;
+	function CreateNewWallet(uint uid) external onlyOwner returns (address) {
+		_userWallets[uid] = address(new FiatWallet()); // create a new wallet
+		return _userWallets[uid];
+	}
 
-        emit Deposit(msg.sender, amount);
+	function DestroyWallet(uint uid) external onlyOwner {
+		delete _userWallets[uid];
+	}
+
+	function TransferMoneyBetweenWallets(uint src_uid, uint dst_uid, uint value) external onlyOwner {
+		FiatWallet(_userWallets[src_uid]).withdraw(value);
+		FiatWallet(_userWallets[dst_uid]).deposit(value);
+	}
+
+	function getBalanceOf(uint uid) external view onlyOwner returns (uint){
+		return FiatWallet(_userWallets[uid]).balance();
+	}
+
+	function DepositTo(uint uid, uint value) external onlyOwner {
+		FiatWallet(_userWallets[uid]).deposit(value);
+	}
+
+	function Withdraw(uint uid, uint value) external onlyOwner {
+		FiatWallet(_userWallets[uid]).withdraw(value);
+	}
+
+}
+
+contract FiatWallet {
+    uint public balance;
+    address public owner;
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not the contract owner");
+        _;
     }
 
-    function withdraw(uint256 amount) public {
-        require(balances[msg.sender] >= amount, "Insufficient balance");
-
-        balances[msg.sender] -= amount;
-        // Removing the ether transfer part as we are not dealing with real ether
-
-        emit Withdrawal(msg.sender, amount);
+    constructor() {
+        owner = msg.sender; // each wallet will be owned by overarching contract
     }
 
-    function getBalance(address userAddress) public view returns (uint256) {
-        return balances[userAddress];
+    function deposit(uint amount) external onlyOwner {
+        require(amount != 0, "Amount must be greater than zero");
+        balance += amount;
     }
 
-    function withdrawAll() public onlyOwner {
-        uint256 amount = address(this).balance;
-        payable(owner).transfer(amount);
+    function withdraw(uint amount) external onlyOwner {
+        require(balance >= amount, "Insufficient balance");
+        balance -= amount;
     }
+
 }
